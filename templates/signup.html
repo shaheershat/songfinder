@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="/static/Logo.png" type="image/icon type">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script> <!-- Font Awesome -->
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+    <div class="bg-white p-6 rounded-lg shadow-md w-96">
+        <h2 class="text-2xl font-semibold text-center mb-4">Create an Account</h2>
+
+        <!-- Display Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                    {% for category, message in messages %}
+                        <div class="text-red-500 font-semibold text-center">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('signup') }}" method="POST">
+            <label class="block mb-2 font-semibold">Username</label>
+            <input type="text" name="username" id="username" class="w-full p-2 border border-gray-300 rounded mb-3" required>
+        
+            <!-- Password Field with Eye Icon -->
+            <label class="block mb-2 font-semibold">Password</label>
+            <div class="relative w-full flex items-center">
+                <input type="password" name="password" id="password" class="w-full p-2 border border-gray-300 rounded text-lg pr-10 " required>
+                <span class="absolute inset-y-0 right-3 flex items-center cursor-pointer" id="toggle-password">
+                    <i id="eye-icon1" class="fa-solid fa-eye text-gray-500 text-sm"></i> <!-- Small Eye Icon -->
+                </span>
+            </div>
+
+            <!-- Re-enter Password Field with Eye Icon -->
+            <label class="block mb-2 font-semibold mt-3">Re-enter Password</label>
+            <div class="relative w-full flex items-center">
+                <input type="password" name="confirm_password" id="confirm_password" class="w-full p-2 border border-gray-300 rounded text-lg pr-10" required>
+                <span class="absolute inset-y-0 right-3 flex items-center cursor-pointer" id="toggle-confirm-password">
+                    <i id="eye-icon2" class="fa-solid fa-eye text-gray-500 text-sm"></i> <!-- Small Eye Icon -->
+                </span>
+            </div>
+        
+            <!-- Client-side validation message -->
+            <p id="password-error" class="text-red-500 text-sm hidden mt-2">Passwords do not match!</p>
+
+            <button type="submit" class="w-full bg-blue-500 text-white font-semibold py-2 rounded mt-4">
+                Create Account
+            </button>
+        </form>
+
+        <p class="text-center mt-4">
+            Already have an account? <a href="{{ url_for('login') }}" class="text-blue-500 hover:underline">Log in</a>
+        </p>
+    </div>
+
+    <script>
+        // Toggle password visibility for Password field
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            let passwordInput = document.getElementById('password');
+            let eyeIcon = document.getElementById('eye-icon1');
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";  
+                eyeIcon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                passwordInput.type = "password";  
+                eyeIcon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        });
+
+        // Toggle password visibility for Re-enter Password field
+        document.getElementById('toggle-confirm-password').addEventListener('click', function() {
+            let confirmPasswordInput = document.getElementById('confirm_password');
+            let eyeIcon = document.getElementById('eye-icon2');
+
+            if (confirmPasswordInput.type === "password") {
+                confirmPasswordInput.type = "text";  
+                eyeIcon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                confirmPasswordInput.type = "password";  
+                eyeIcon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        });
+
+        // Real-time validation for password match
+        document.getElementById("confirm_password").addEventListener("input", function () {
+            let password = document.getElementById("password").value;
+            let confirmPassword = document.getElementById("confirm_password").value;
+            let errorText = document.getElementById("password-error");
+
+            if (password !== confirmPassword) {
+                errorText.classList.remove("hidden");
+            } else {
+                errorText.classList.add("hidden");
+            }
+        });
+    </script>
+</body>
+</html>

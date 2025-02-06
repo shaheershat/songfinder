@@ -1,0 +1,18 @@
+{
+    "admin": {
+        "password": "adminpass",
+        "blocked": false
+    },
+    "Shaheer Sha T": {
+        "password": "shaheert7",
+        "blocked": false
+    },
+    "user1": {
+        "password": "password123",
+        "blocked": false
+    },
+    "s": {
+        "password": "s",
+        "blocked": false
+    }
+}

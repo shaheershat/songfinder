@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="/static/Logo.png" type="image/icon type">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function handleSearch(event) {
+            const themeInput = document.getElementsByName("theme")[0];
+            const searchMessage = document.getElementById("searchMessage");
+
+            // If input is empty, prevent form submission and show error message
+            if (themeInput.value.trim() === "") {
+                event.preventDefault(); // Prevent form submission
+                searchMessage.style.display = "block"; // Show message
+            } else {
+                searchMessage.style.display = "none"; // Hide message if input is not empty
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 p-10">
+    <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-semibold text-center mb-6">Search for Songs by Theme</h1>
+        
+        <form action="/search" method="POST" onsubmit="handleSearch(event)">
+            <input type="text" name="theme" placeholder="Enter Theme" class="w-full p-3 border border-gray-300 rounded-lg mb-4">
+            <button type="submit" class="w-full py-2 bg-blue-500 text-white rounded-lg mb-4">Search</button>
+        </form>
+
+        <!-- Message to show if no input is provided -->
+        <div id="searchMessage" style="display: none;" class="text-center text-red-500 mt-4">
+            Please enter a theme to search.
+        </div>
+
+        <!-- Logout Button with new background and blue text -->
+        <div class="text-center">
+            <a href="{{ url_for('logout') }}" class="px-4 py-2 text-blue-500 rounded-lg text-sm">Logout</a>
+        </div>
+    </div>
+</body>
+</html>

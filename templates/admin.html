@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="/static/Logo.png" type="image/icon type">
+</head>
+
+<body class="flex h-screen bg-gray-100">
+
+    <!-- Sidebar -->
+    <div class="bg-gray-800 text-white p-6 w-64">
+        <h2 class="text-2xl font-semibold mb-8">Dashboard</h2>
+        <ul>
+            <li><a href="#" class="block py-2 hover:bg-gray-700 rounded" id="users-link">Users</a></li>
+            <li><a href="#" class="block py-2 hover:bg-gray-700 rounded" id="add-user-link">Add New User</a></li>
+            <li><a href="#" class="block py-2 hover:bg-gray-700 rounded" id="settings-link">Settings</a></li>
+        </ul>
+        <p class="mt-8 text-left">
+            <a href="{{ url_for('logout') }}" class="bg-red-500 text-white rounded p-2 w-full text-left hover:bg-red-700">Log out</a>
+        </p>
+    </div>
+
+    <!-- Main content -->
+    <div class="flex-1 p-6">
+        <h2 class="text-3xl font-semibold mb-6">Admin Panel</h2>
+
+        <!-- Users Section -->
+        <section id="users-section">
+            <h3 class="text-2xl font-semibold mb-4">Users List</h3>
+            <div class="overflow-x-auto bg-white p-6 rounded-lg shadow-md">
+                <table class="min-w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="px-4 py-2 text-left">Username</th>
+                            <th class="px-4 py-2 text-left">Password</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body">
+                        {% for username, details in users.items() %}
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2">{{ username }}</td>
+                            <td class="px-4 py-2">{{ details['password'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Add New User Section -->
+        <section id="add-user-section" class="hidden bg-white p-6 rounded-lg shadow-md mb-8">
+            <h3 class="text-2xl font-semibold mb-4">Add New User</h3>
+            <form action="{{ url_for('add_user') }}" method="POST">
+                <input type="text" name="username" class="border p-2 mb-2 w-96 rounded" placeholder="Username"><br>
+                <input type="password" name="password" class="border p-2 mb-2 w-96 rounded" placeholder="Password"><br>
+                <button type="submit" class="bg-blue-500 text-white rounded p-2">Add User</button>
+            </form>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings-section" class="hidden bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold mb-4">User Settings</h3>
+            <table class="min-w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="px-4 py-2 text-left">Username</th>
+                        <th class="px-4 py-2 text-left">Status</th>
+                        <th class="px-4 py-2 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, details in users.items() %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">{{ username }}</td>
+                        <td class="px-4 py-2">
+                            {% if details.get('blocked', False) %}
+                            <span class="text-red-500">Blocked</span>
+                            {% else %}
+                            <span class="text-green-500">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">
+                            <button onclick="toggleBlock('{{ username }}')" class="text-yellow-500 hover:text-yellow-700">
+                                {% if details.get('blocked', False) %} Unblock {% else %} Block {% endif %}
+                            </button> |
+                            <button onclick="removeUser('{{ username }}')" class="text-red-500 hover:text-red-700">Remove</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        // Block/unblock user function (without reload)
+        function toggleBlock(username) {
+            fetch('/toggle_block_user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Find the row of the user
+                    const rows = document.querySelectorAll("#settings-section tbody tr");
+                    rows.forEach(row => {
+                        const userCell = row.querySelector("td:first-child");
+                        if (userCell && userCell.innerText.trim() === username) {
+                            const statusCell = row.querySelector("td:nth-child(2)");
+                            const button = row.querySelector("button");
+    
+                            // Toggle status text and button text
+                            if (statusCell.innerText.includes('Blocked')) {
+                                statusCell.innerHTML = '<span class="text-green-500">Active</span>';
+                                button.innerText = 'Block';
+                            } else {
+                                statusCell.innerHTML = '<span class="text-red-500">Blocked</span>';
+                                button.innerText = 'Unblock';
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        // Remove user function (with feedback and row removal)
+        function removeUser(username) {
+            if (confirm("Are you sure you want to remove this user?")) {
+                fetch('/remove_user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ username })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Find the row of the user and remove it from the table
+                        const rows = document.querySelectorAll("#settings-section tbody tr");
+                        rows.forEach(row => {
+                            const userCell = row.querySelector("td:first-child");
+                            if (userCell && userCell.innerText.trim() === username) {
+                                row.remove();
+                            }
+                        });
+                    } else {
+                        alert("Failed to remove user. " + (data.error || ""));
+                    }
+                })
+                .catch(error => {
+                    alert("An error occurred: " + error);
+                });
+            }
+        }
+
+        // Sidebar navigation fix
+        document.querySelectorAll("[id$='-link']").forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                document.querySelectorAll("section").forEach(sec => sec.classList.add('hidden'));
+                document.getElementById(link.id.replace('-link', '-section')).classList.remove('hidden');
+            });
+        });
+    </script>
+
+</body>
+</html>
